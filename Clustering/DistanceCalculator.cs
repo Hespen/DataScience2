@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Clustering
@@ -11,9 +12,9 @@ namespace Clustering
         /// </summary>
         /// <param name="pivot">DataTable containing the purchases for every customer</param>
         /// <param name="clusterLocations">The locations of the cluster</param>
-        public DataTable CalculateDistanceBetween(DataTable pivot, DataTable clusterLocations)
+        public DataTable CalculateDistanceBetween(DataTable pivot, DataTable clusterLocations, int clusters)
         {
-            var distancesTable = CreateDataTable(4);
+            var distancesTable = CreateDataTable(clusters);
 
             //Loop through all customers
             for (var i = 1; i < pivot.Columns.Count; i++)
@@ -28,7 +29,7 @@ namespace Clustering
                 var assignedCluster = 0;
 
                 // Loop through all clusters, j is the current cluster
-                for (var j = 0; j < 4; j++)
+                for (var j = 0; j < clusters; j++)
                 {
                     double clusterDistance = 0;
 
@@ -40,15 +41,9 @@ namespace Clustering
                         //Euclidian Sum
                         var purchaseValue = purchase.Equals("1") ? 1 : 0;
                         var clusterPosition = clusterLocationForOffer[j + 1];
-//                        if (clusterPosition != null)
-//                        {
-//
-//                        }
-//                        else
-//                        {
-//                            
-//                        }
-                        double k = purchaseValue - float.Parse(clusterLocationForOffer[j + 1].ToString());
+
+                        var clusterOffer = clusterLocationForOffer[j + 1] == DBNull.Value ? 0 : clusterLocationForOffer[j + 1];
+                        double k = purchaseValue - float.Parse(clusterOffer.ToString());
                         clusterDistance += Math.Pow(k, 2);
                         counter++;
                     }

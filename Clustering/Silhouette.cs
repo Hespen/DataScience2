@@ -57,27 +57,35 @@ namespace Clustering
 
         public double CalculateAverageClusterDistance(DataTable customerDistances, DataTable distancesTable,int k)
         {
+
             var view = new DataView(distancesTable);
+            //Create a new DataTable with the columns Customer & Assigned Cluster
             var assignments = view.ToTable("SELECTED", false,"Customer", "Assigned Cluster");
             var silhouetteList = new List<double>();
+
             foreach (var customerA in customerDistances.AsEnumerable())
             {
                 var averageDistances = new float[k];
                 var customerACluster = 0;
-                for (int i = 1; i <= k; i++)
+                for (var i = 1; i <= k; i++)
                 {
                     float totalDistance = 0;
+                    //Find all names assigned to Cluster i
                     var names = assignments.AsEnumerable().Where(s => s.Field<String>(1) == i.ToString()).ToList();
+                    //For every customerB in names, get the distance value between customerA 
                     foreach(var customerB in names)
                     {
                         var t = customerB.Field<String>(0);
                         if (t.Equals(customerA[0])) customerACluster = i;
+                        //Add cell value to totalDistance
                         totalDistance += float.Parse(customerA.Field<string>(t));
                     }
 
                    averageDistances[i-1] = totalDistance/names.Count;
                 }
+
                 var ownCluster = averageDistances[customerACluster - 1];
+                //Remove own cluster distance from array
                 averageDistances = averageDistances.Where(val => val != ownCluster).ToArray();
 
                 var nearestCluster = averageDistances.Min();
