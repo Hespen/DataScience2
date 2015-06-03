@@ -12,7 +12,7 @@ namespace Clustering
     class Program
     {
         private static ClusterHandler _clusterHandler;
-        private static int _k = 4;
+        private static int _k = 5;
 
         static void Main(string[] args)
         {
@@ -20,20 +20,17 @@ namespace Clustering
             var pivot = reader.ReadDataFromFile(Constants.Pivot);
 
 
-
+            //Create initial centroids
             _clusterHandler = new ClusterHandler(_k);
             var clusterLocations = _clusterHandler.CreateClusters();
 
+            //Compute distances from customers to clusters
             var calculator = new DistanceCalculator();
-
-
-            var distancesTable = calculator.CalculateDistanceBetween(pivot, clusterLocations, _k);
-
-            var silhouette = new Silhouette();
-
-            
+            var distancesTable = calculator.CalculateDistanceBetween(pivot, clusterLocations, _k);        
 
             var totalDistance = 0.0f;
+
+            // Keep on updating centroid location and customer distances until the total distance doesn't change anymore
             while(true){
                 
                 clusterLocations = _clusterHandler.UpdateCentroids(pivot, distancesTable, _k);
@@ -51,11 +48,11 @@ namespace Clustering
             }
 
             var SSE = new SSE();
-            SSE.CalculateDistances(pivot,clusterLocations,distancesTable,_k);
+            var sseval = SSE.CalculateSSE(pivot,clusterLocations,distancesTable,_k);
 
+            var silhouette = new Silhouette();
             var customerDistances = silhouette.CalculateCustomerDistances(pivot);
-            silhouette.CalculateAverageClusterDistance(customerDistances, distancesTable, _k);
-            silhouette.CalculateSilhouette();
+            var silhoutteval = silhouette.CalculateSilhoutte(customerDistances, distancesTable, _k);
 
             var topDeals = new TopDeals();
             var topDealsList = new List<DataTable>();

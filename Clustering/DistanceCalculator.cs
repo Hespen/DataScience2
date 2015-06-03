@@ -66,6 +66,7 @@ namespace Clustering
             return distancesTable;
         }
 
+
         private DataTable CreateDataTable(int length)
         {
             var table = new DataTable();

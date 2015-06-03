@@ -14,31 +14,44 @@ namespace Clustering
             _k = k;
         }
 
+        /// <summary>
+        /// This method creates all initial clusters/centroids at random.
+        /// </summary>
+        /// <returns>Centroid locations for 4 cluster in 32 dimensions</returns>
         public DataTable CreateClusters()
         {
             var rand = new Random();
             var clusterLocations = new DataTable();
+
             clusterLocations.Columns.Add("Offer");
             for (var i = 1; i <= _k; i++)
             {
                 clusterLocations.Columns.Add("Cluster " + i);
             }
-            var locations = new float[_k];
             
+            // We need to create a centroid position for each dimension, in this case there are 32 dimensions.
             for (var i = 1; i <= 32; i++)
             {
                 var row = clusterLocations.NewRow();
                 row[0] = i;
+
+                // Generate random centroid position for each cluster
                 for (var j = 1; j <= _k; j++)
                 {
                     row[j] = rand.NextDouble();
                 }
                 clusterLocations.Rows.Add(row);
-//                clusterLocations.Add(new Tuple<int, float[]>(i, locations));
             }
             return clusterLocations;
         }
 
+        /// <summary>
+        /// This method updates centroids for k clusters in all dimensions.
+        /// </summary>
+        /// <param name="pivot">Binary data of purchases per offer</param>
+        /// <param name="distancesTable">Distances from each customer to each cluster and assigned cluster</param>
+        /// <param name="k">Number of clusters used</param>
+        /// <returns>A DataTable with the new updated centroids</returns>
         public DataTable UpdateCentroids(DataTable pivot, DataTable distancesTable, int k)
         {
             var clusterLocations = new DataTable();
@@ -47,6 +60,7 @@ namespace Clustering
             {
                 clusterLocations.Columns.Add("Cluster " + i);
             }
+
             var offerCounter = 0;
             foreach (var offer in pivot.AsEnumerable())
             {
@@ -54,12 +68,12 @@ namespace Clustering
                 var locations = new float[k];
                 for (var cluster = 1; cluster <= k; cluster++)
                 {
-                    //Get all Rows assigned to cluster k
+                    //Get all customers assigned to cluster k
                     var assignedUserDistances =
                         distancesTable.AsEnumerable()
                             .Where(s => s.Field<string>(distancesTable.Columns.Count - 1) == cluster.ToString())
                             .ToList();
-                    //Get the names
+                    //Get only the names of customers that are assigned to cluster k
                     var names = assignedUserDistances.AsEnumerable().Select(s => s.Field<string>("Customer"));
                     float totalBought = 0;
                     foreach (var name in names)
@@ -70,6 +84,9 @@ namespace Clustering
                         }
                     }
                     if (names.Count() == 0) continue;
+
+                    // New centroid position is the number of purchases for the offer for cluster k, 
+                    // divided by the total amount of customers assigned to the cluster.
                     row[cluster] = totalBought/names.Count();
                 }
                 offerCounter++;

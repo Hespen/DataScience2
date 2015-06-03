@@ -10,6 +10,11 @@ namespace Clustering
     class Silhouette
     {
 
+        /// <summary>
+        /// This method calculates the distances between customers
+        /// </summary>
+        /// <param name="pivot">Binary purchase data</param>
+        /// <returns>A DataTable which contains distances between all customers</returns>
         public DataTable CalculateCustomerDistances(DataTable pivot)
         {
             var distances = new DataTable();
@@ -22,7 +27,7 @@ namespace Clustering
             }
             for (var i = 1; i < pivot.Columns.Count; i++)
             {
-                //Get column A to use for Euclidian
+                //Get column of customer A to use for Euclidian
                 var columnCustomerA = pivot.AsEnumerable().Select(s => s.Field<String>(i)).ToList();
 
                 var dataRow = distances.NewRow();
@@ -31,10 +36,10 @@ namespace Clustering
 
                 for (var j = 1; j < pivot.Columns.Count; j++)
                 {
-                    //Get column B to use for Euclidian
+                    //Get column of customer B to use for Euclidian
                     var columnCustomerB = pivot.AsEnumerable().Select(s => s.Field<String>(j)).ToList();
                     float distance = 0;
-                    //Loop through the rows of the A and B columns
+                    //Loop through the rows of the A and B columns, which is all binary purchase data for both customers
                     for (var k = 0; k < columnCustomerA.Count; k++)
                     {
                         //Euclidian
@@ -50,17 +55,21 @@ namespace Clustering
             return distances;
         }
         
-        public void CalculateSilhouette()
-        {
-            
-        }
-
-        public double CalculateAverageClusterDistance(DataTable customerDistances, DataTable distancesTable,int k)
+        /// <summary>
+        /// Calculates the average silhouette value.
+        /// </summary>
+        /// <param name="customerDistances">Distances between all customers</param>
+        /// <param name="distancesTable">Distance from customers to clusters</param>
+        /// <param name="k">Amount of clusters</param>
+        /// <returns>Silhoutte value</returns>
+        public double CalculateSilhoutte(DataTable customerDistances, DataTable distancesTable,int k)
         {
 
             var view = new DataView(distancesTable);
             //Create a new DataTable with the columns Customer & Assigned Cluster
             var assignments = view.ToTable("SELECTED", false,"Customer", "Assigned Cluster");
+
+            // Contains silhouette values for each customer.
             var silhouetteList = new List<double>();
 
             foreach (var customerA in customerDistances.AsEnumerable())
@@ -85,15 +94,14 @@ namespace Clustering
                 }
 
                 var ownCluster = averageDistances[customerACluster - 1];
-                //Remove own cluster distance from array
-                averageDistances = averageDistances.Where(val => val != ownCluster).ToArray();
 
+                //Remove own cluster distance from array, so we can pick the second closest by using the .Min() method.
+                averageDistances = averageDistances.Where(val => val != ownCluster).ToArray();
                 var nearestCluster = averageDistances.Min();
 
                 silhouetteList.Add((nearestCluster - ownCluster)/Math.Max(nearestCluster, ownCluster));
             }
-            var averageSilhouette = silhouetteList.Average();
-            return averageSilhouette;
+            return silhouetteList.Average();
         }
     }
 }
