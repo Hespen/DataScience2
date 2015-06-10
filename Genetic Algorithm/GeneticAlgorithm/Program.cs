@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace GeneticAlgorithm
 {
     class Program
     {
-        static int dataSize = 10;
+        static int dataSize = 20;
         static int populationSize = 30;
+        static int numberOfIterations = 50;
 
         static void Main(string[] args)
         {
@@ -20,11 +22,33 @@ namespace GeneticAlgorithm
             Func<Tuple<Ind, Ind>, Tuple<Ind, Ind>> crossover;           ==> input is a tuple with two individuals (parents), output is a tuple with two individuals (offspring/children)
             Func<Ind, double, Ind> mutation;                            ==> input is one individual and mutation rate, output is the mutated individual
             */
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+            GeneticAlgorithm<int[]> fakeProblemGA = new GeneticAlgorithm<int[]>(0.95, 0.01, true, populationSize, dataSize, numberOfIterations); 
+            var solution = fakeProblemGA.Run(fakeProblemGA.CreateIndividual, fakeProblemGA.ComputeFitness, fakeProblemGA.SelectTwoParents, fakeProblemGA.Crossover, fakeProblemGA.Mutation);
+            stopWatch.Stop();
             
-            GeneticAlgorithm<int[]> fakeProblemGA = new GeneticAlgorithm<int[]>(1.0, 0.1, false, populationSize, dataSize, 1); // CHANGE THE GENERIC TYPE (NOW IT'S INT AS AN EXAMPLE) AND THE PARAMETERS VALUES
-            var solution = fakeProblemGA.Run(fakeProblemGA.CreateIndividual, fakeProblemGA.ComputeFitness, fakeProblemGA.SelectTwoParents, fakeProblemGA.Crossover, fakeProblemGA.Mutation); 
             Console.WriteLine("Solution: ");
-            Console.WriteLine(solution);
+
+            Console.Write("[");
+            int counter = 0;
+            foreach (var number in solution)
+            {
+                counter++;
+                Console.Write(number);
+                if (counter < solution.Length)
+                {
+                    Console.Write(", ");
+                }
+            }
+            Console.Write("]");
+
+            Console.WriteLine("\n\nTotal fitness: ");
+            Console.WriteLine(solution.Sum());
+
+            Console.WriteLine("\n\nElapsed time: ");
+            Console.WriteLine(stopWatch.ElapsedMilliseconds + " milliseconds");
+            Console.ReadKey();
 
         }
     }
