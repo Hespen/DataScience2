@@ -15,7 +15,7 @@ namespace GeneticAlgorithm
         private readonly int _populationSize;
         private readonly int _numIterations;
         private readonly int _dataSize;
-        private Random _r;
+        private readonly Random _random;
 
         private readonly DataTable _purchaseData;
 
@@ -28,6 +28,8 @@ namespace GeneticAlgorithm
             _dataSize = dataSize;
             _numIterations = numIterations;
             _purchaseData = purchaseData;
+
+            _random = new Random();
         }
 
         public Tuple<Ind, double> Run(Func<Ind> createIndividual, Func<Ind,double> computeFitness, Func<Ind[],double[],Func<Tuple<Ind,Ind>>> selectTwoParents, 
@@ -71,7 +73,7 @@ namespace GeneticAlgorithm
 
                     // do a crossover between the selected parents to generate two children (with a certain probability, crossover does not happen and the two parents are kept unchanged)
                     Tuple<Ind,Ind> offspring;
-                    if (_r.NextDouble() < _crossoverRate)
+                    if (_random.NextDouble() < _crossoverRate)
                         offspring = crossover(parents);
                     else
                         offspring = parents;
@@ -95,18 +97,13 @@ namespace GeneticAlgorithm
 
         public double[] CreateIndividual()
         {
-            if (_r == null)
-            {
-                _r = new Random();
-            }
 
             double[] individual = new double[_dataSize];
-            
 
             // Generate a random binary number for each index in the data size to create an individual.
             for (int i = 0; i < _dataSize; i++)
             {
-                individual[i] = _r.NextDouble() * (1 - -1) - 1;
+                individual[i] = _random.NextDouble() * (1 - -1) - 1;
             }
 
             return individual;
@@ -136,7 +133,7 @@ namespace GeneticAlgorithm
 
         public Func<Tuple<double[], double[]>> SelectTwoParents(double[][] currentPopulation, double[] fitness)
         {
-            const int tournamentSize = 18;
+            const int tournamentSize = 200;
 
             return () => GetTwoParents(tournamentSize, currentPopulation, fitness);
         }
@@ -172,7 +169,7 @@ namespace GeneticAlgorithm
             // Generate random numbers, which represents indexes of the tournament participators
             while (true)
             {
-                int randomParticipatorIndex = _r.Next(0, currentPopulation.Length);
+                int randomParticipatorIndex = _random.Next(0, currentPopulation.Length);
                 if (!participatorIndexes.Contains(randomParticipatorIndex) && randomParticipatorIndex != firstParentIndex)
                 {
                     participatorIndexes.Add(randomParticipatorIndex);
@@ -209,7 +206,7 @@ namespace GeneticAlgorithm
             for (int i = 0; i < _dataSize; i++)
             {
                 // Uniform crossover, so randomly crossover data points. Generate number between 0 and 1 to determine which parent to select from.
-                if (_r.Next(0, 2) == 0)
+                if (_random.Next(0, 2) == 0)
                 {
                     offspring[0][i] = parents.Item1[i];
                     offspring[1][i] = parents.Item2[i];
@@ -228,7 +225,7 @@ namespace GeneticAlgorithm
         {
             for (int i = 0; i < individual.Length; i++)
             {
-                if (_r.NextDouble() <= mutationRate)
+                if (_random.NextDouble() <= mutationRate)
                 {
                     // Mirror value; Positive becomes negative and negative becomes positive.
                     individual[i] = individual[i] * -1;

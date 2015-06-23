@@ -11,8 +11,8 @@ namespace GeneticAlgorithm
     class Program
     {
         private const int DataSize = 20;
-        private const int PopulationSize = 30;
-        private const int NumberOfIterations = 100;
+        private const int PopulationSize = 1000;
+        private const int NumberOfIterations = 400;
 
         private const string FilePath = "../../RetailMart.csv";
 

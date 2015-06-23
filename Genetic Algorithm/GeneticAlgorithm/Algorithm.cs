@@ -14,7 +14,7 @@ namespace GeneticAlgorithm
         int populationSize;
         int numIterations;
         int dataSize;
-        Random r;
+        readonly Random _random;
 
         public GeneticAlgorithm(double crossoverRate, double mutationRate, bool elitism, int populationSize, int dataSize, int numIterations)
         {
@@ -24,6 +24,7 @@ namespace GeneticAlgorithm
             this.populationSize = populationSize;
             this.dataSize = dataSize;
             this.numIterations = numIterations;
+            _random = new Random();
         }
 
         public Ind Run(Func<Ind> createIndividual, Func<Ind,double> computeFitness, Func<Ind[],double[],Func<Tuple<Ind,Ind>>> selectTwoParents, 
@@ -67,7 +68,7 @@ namespace GeneticAlgorithm
 
                     // do a crossover between the selected parents to generate two children (with a certain probability, crossover does not happen and the two parents are kept unchanged)
                     Tuple<Ind,Ind> offspring;
-                    if (r.NextDouble() < crossoverRate)
+                    if (_random.NextDouble() < crossoverRate)
                         offspring = crossover(parents);
                     else
                         offspring = parents;
@@ -91,28 +92,20 @@ namespace GeneticAlgorithm
 
         public int[] CreateIndividual()
         {
-            if (r == null)
-            {
-                r = new Random();
-            }
-
             int[] individual = new int[dataSize];
-            
 
             // Generate a random binary number for each index in the data size to create an individual.
             for (int i = 0; i < dataSize; i++)
             {
-                individual[i] = ((r.Next() % 2 == 0) ? 0 : 1);
+                individual[i] = ((_random.Next() % 2 == 0) ? 0 : 1);
             }
-
             return individual;
-
         }
 
         public double ComputeFitness(int[] individual)
         {
+            //Count the amount of 1's in the set of data
             return individual.Count<int>(i => i == 1);
-            
         }
 
         public Func<Tuple<int[], int[]>> SelectTwoParents(int[][] currentPopulation, double[] fitness)
@@ -138,7 +131,7 @@ namespace GeneticAlgorithm
                 }
             }
 
-            return delegate() { return GetTwoParents(cummulativeProbabilities, currentPopulation); };
+            return () => GetTwoParents(cummulativeProbabilities, currentPopulation);
         }
 
         public Tuple<int[], int[]> GetTwoParents(double[] cummulativeProbabilities, int[][] currentPopulation)
@@ -150,7 +143,7 @@ namespace GeneticAlgorithm
             while (true)
             {
 
-                double randomDouble = r.NextDouble();
+                double randomDouble = _random.NextDouble();
 
                 // Loop through all cummulative probabilities. If the probability is bigger than the random number,
                 // it means we found the individual that has the randomDouble in its range so we pick it to be a parent.
@@ -192,7 +185,7 @@ namespace GeneticAlgorithm
         public Tuple<int[], int[]> Crossover(Tuple<int[], int[]> parents){
             int[][] offspring = new int[2][];
 
-            int crossoverPoint = r.Next(dataSize);
+            int crossoverPoint = _random.Next(dataSize);
 
             // First offspring
             var firstString = parents.Item1.Take(crossoverPoint);
@@ -214,7 +207,7 @@ namespace GeneticAlgorithm
             int counter = 0;
             for (int i = 0; i < individual.Length; i++)
             {
-                if (r.NextDouble() <= mutationRate)
+                if (_random.NextDouble() <= mutationRate)
                 {
                     counter++;
                     // Mirror value; 1 -> 0 or 1 -> 0

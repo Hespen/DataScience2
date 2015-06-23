@@ -10,8 +10,8 @@ namespace GeneticAlgorithm
     class Program
     {
         static int dataSize = 20;
-        static int populationSize = 30;
-        static int numberOfIterations = 50;
+        static int populationSize = 60;
+        static int numberOfIterations = 200;
 
         static void Main(string[] args)
         {
@@ -24,7 +24,7 @@ namespace GeneticAlgorithm
             */
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
-            GeneticAlgorithm<int[]> fakeProblemGA = new GeneticAlgorithm<int[]>(0.95, 0.01, true, populationSize, dataSize, numberOfIterations); 
+            GeneticAlgorithm<int[]> fakeProblemGA = new GeneticAlgorithm<int[]>(0.5, 0.1, false, populationSize, dataSize, numberOfIterations); 
             var solution = fakeProblemGA.Run(fakeProblemGA.CreateIndividual, fakeProblemGA.ComputeFitness, fakeProblemGA.SelectTwoParents, fakeProblemGA.Crossover, fakeProblemGA.Mutation);
             stopWatch.Stop();
             
